@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber-Festival | Sorteos Globales</title>
+    
+    <!-- Fuentes Modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Librería de Confeti para la celebración -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* === VARIABLES DE ESTILO CYBER-FESTIVAL === */
+        :root {
+            --coral-vivo: #FF6B6B;
+            --turquesa: #4ECDC4;
+            --amarillo-neon: #FFE66D;
+            --blanco-humo: #F8F9FA;
+            --texto-oscuro: #2B2D42;
+            --gris-claro: #E0E5EC;
+            
+            --gradiente-bg: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --gradiente-primario: linear-gradient(135deg, var(--coral-vivo) 0%, var(--turquesa) 100%);
+            --sombra-suave: 0 10px 20px rgba(0,0,0,0.08);
+            --sombra-fuerte: 0 15px 30px rgba(78, 205, 196, 0.4);
+            --borde-radio: 20px;
+        }
+
+        /* === RESET & BASE === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradiente-bg);
+            color: var(--texto-oscuro);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        h1, h2, h3 { font-family: 'Montserrat', sans-serif; text-transform: uppercase; }
+
+        /* === HEADER & FEED === */
+        header {
+            background: var(--gradiente-primario);
+            color: white;
+            padding: 3rem 1rem 2rem;
+            text-align: center;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: var(--sombra-suave);
+            position: relative;
+        }
+        header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: 2px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); margin-bottom: 0.5rem; }
+        .live-stats {
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+            display: inline-block; padding: 0.5rem 1.5rem; border-radius: 50px;
+            font-weight: 600; margin-top: 1rem; border: 1px solid rgba(255,255,255,0.4);
+        }
+        .feed-container { height: 30px; overflow: hidden; margin-top: 10px; font-size: 0.9rem; opacity: 0.9; }
+        .feed-item { animation: slideUp 0.5s ease forwards; }
+
+        /* === CONTENEDOR PRINCIPAL === */
+        .container { max-width: 1200px; margin: -30px auto 2rem; padding: 0 1rem; position: relative; z-index: 10; }
+
+        /* === FORMULARIO ÚNICO GLOBAL === */
+        .registro-global {
+            background: white; padding: 2rem; border-radius: var(--borde-radio);
+            box-shadow: var(--sombra-suave); margin-bottom: 1.5rem; text-align: center;
+            border-top: 5px solid var(--amarillo-neon);
+        }
+        .registro-global h2 { color: var(--coral-vivo); margin-bottom: 1.5rem; }
+        .formulario { display: grid; grid-template-columns: 1fr; gap: 1rem; text-align: left; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; color: #555; }
+        input, select {
+            padding: 1rem; border: 2px solid var(--gris-claro); border-radius: 10px;
+            font-family: 'Poppins', sans-serif; font-size: 1rem; transition: all 0.3s;
+        }
+        input:focus, select:focus { border-color: var(--turquesa); outline: none; box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2); }
+        .btn-submit {
+            background: var(--amarillo-neon); color: var(--texto-oscuro); font-weight: 700; font-size: 1.2rem;
+            padding: 1rem; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase;
+            transition: transform 0.2s, box-shadow 0.2s; margin-top: 1rem;
+        }
+        .btn-submit:hover:not(:disabled) { transform: translateY(-3px); box-shadow: var(--sombra-fuerte); }
+        .btn-submit:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .hint-text { font-size: 0.8rem; color: var(--coral-vivo); margin-top: 0.3rem; display: none; }
+        .hide-robot { display: none !important; }
+
+        /* === VALIDADOR DE ESTADO === */
+        .validador-estado {
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); padding: 2rem;
+            border-radius: var(--borde-radio); margin-bottom: 3rem; text-align: center;
+            border: 2px dashed var(--turquesa); box-shadow: var(--sombra-suave);
+        }
+        .validador-estado h3 { color: var(--texto-oscuro); margin-bottom: 0.5rem; font-size: 1.3rem; }
+        .validador-form { display: flex; gap: 1rem; max-width: 700px; margin: 1.5rem auto 0; flex-direction: column; }
+        .btn-validador {
+            background: var(--turquesa); color: white; font-family: 'Poppins', sans-serif; font-weight: 700;
+            padding: 1rem 2rem; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-validador:hover:not(:disabled) { background: #3bbcb3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4); }
+        .btn-validador:disabled { background: #ccc; cursor: not-allowed; }
+        .validador-resultado { margin-top: 1.5rem; font-weight: bold; font-size: 1.1rem; min-height: 24px; }
+        .res-success { color: #20bf6b; } .res-error { color: #eb3b5a; }
+
+        /* === GRID DE SORTEOS === */
+        .sorteos-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        .tarjeta-sorteo {
+            background: white; border-radius: var(--borde-radio); overflow: hidden;
+            box-shadow: var(--sombra-suave); transition: transform 0.3s; display: flex; flex-direction: column; position: relative;
+        }
+        .tarjeta-sorteo:hover { transform: translateY(-5px); }
+        .tarjeta-header { background: var(--gradiente-primario); color: white; padding: 1.5rem; text-align: center; }
+        .tarjeta-body { padding: 1.5rem; text-align: center; flex-grow: 1; }
+        .estado-badge {
+            position: absolute; top: 10px; right: 10px; padding: 0.3rem 0.8rem;
+            border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase;
+        }
+        .estado-abierto { background: var(--amarillo-neon); color: var(--texto-oscuro); }
+        .estado-cerrado { background: #ff4757; color: white; }
+        
+        /* === NUEVO CONTADOR EN BLOQUES CYBER-FESTIVAL === */
+        .contador { display: flex; justify-content: center; gap: 10px; margin: 1.5rem 0; }
+        .time-box {
+            background: var(--texto-oscuro); color: var(--amarillo-neon); padding: 0.5rem 0.3rem;
+            border-radius: 10px; min-width: 65px; display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15); border-bottom: 3px solid var(--turquesa);
+        }
+        .time-box span { font-size: 1.8rem; font-weight: 900; font-family: 'Montserrat', sans-serif; line-height: 1; }
+        .time-box small { font-size: 0.7rem; color: white; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+
+        .ganadores-previos { margin-top: 1.5rem; background: var(--blanco-humo); padding: 1rem; border-radius: 10px; font-size: 0.9rem; text-align: left; }
+        .ganadores-previos h4 { margin-bottom: 0.5rem; color: #666; text-align: center; }
+        .ganador-item { border-bottom: 1px dashed #ccc; padding: 0.5rem 0; display: flex; justify-content: space-between; }
+        .ganador-item:last-child { border-bottom: none; }
+
+        /* === PANEL ADMIN OCULTO === */
+        #admin-panel {
+            display: none; background: #2f3640; color: white; padding: 2rem;
+            border-radius: var(--borde-radio); margin-top: 3rem; border: 2px solid #ff4757;
+        }
+        #admin-panel h3 { color: #ff4757; margin-bottom: 1rem; }
+        .admin-controls { display: grid; gap: 1rem; }
+        .btn-admin { padding: 0.8rem; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-sortear { background: var(--turquesa); color: white; }
+        .btn-cerrar { background: #ff4757; color: white; }
+
+        /* === MODAL GANADOR GIGANTE === */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-content {
+            background: var(--gradiente-bg); padding: 4rem 2rem; border-radius: var(--borde-radio);
+            text-align: center; max-width: 600px; width: 90%; transform: scale(0.8);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 50px var(--amarillo-neon); border: 5px solid var(--amarillo-neon);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-content h2 { font-size: 2.5rem; color: var(--coral-vivo); margin-bottom: 1rem; }
+        .winner-ticket { font-size: 3rem; font-weight: 900; color: var(--turquesa); margin: 1rem 0; }
+        .winner-user { font-size: 1.5rem; background: var(--texto-oscuro); color: white; padding: 0.5rem 1rem; border-radius: 10px; display: inline-block;}
+        .btn-close-modal {
+            margin-top: 2rem; padding: 1rem 2rem; background: var(--coral-vivo); color: white;
+            border: none; border-radius: 50px; cursor: pointer; font-weight: bold;
+        }
+
+        /* === BOTÓN FLOTANTE WHATSAPP === */
+        .btn-whatsapp-flotante {
+            position: fixed; bottom: 30px; right: 30px; background-color: #25D366; color: white;
+            border-radius: 50px; display: flex; align-items: center; justify-content: center;
+            padding: 12px 24px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1rem;
+            text-decoration: none; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); z-index: 1000;
+            transition: all 0.3s ease; animation: latido-whatsapp 2s infinite;
+        }
+        .btn-whatsapp-flotante:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 8px 25px rgba(37, 211, 102, 0.6); color: white; }
+        .btn-whatsapp-flotante svg { width: 28px; height: 28px; margin-right: 10px; fill: currentColor; }
+        
+        @keyframes latido-whatsapp {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+
+        /* === MEDIA QUERIES === */
+        @media (min-width: 768px) {
+            header h1 { font-size: 3.5rem; }
+            .formulario { grid-template-columns: 1fr 1fr; }
+            .btn-submit { grid-column: 1 / -1; }
+            .validador-form { flex-direction: row; }
+            .validador-form input { flex-grow: 1; }
+            .sorteos-grid { grid-template-columns: repeat(3, 1fr); }
+            .admin-controls { grid-template-columns: 1fr 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .btn-whatsapp-flotante { bottom: 20px; right: 20px; padding: 15px; border-radius: 50%; }
+            .btn-whatsapp-flotante span { display: none; }
+            .btn-whatsapp-flotante svg { margin-right: 0; width: 32px; height: 32px; }
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Cyber-Festival</h1>
+        <p>¡Un registro único. Acceso a TODOS los sorteos activos!</p>
+        <div class="live-stats">
+            🔴 <span id="contador-global">---</span> Participantes Globales
+            <div class="feed-container" id="feed-container">
+                <div class="feed-item">Conectando con Servidor Principal...</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- FORMULARIO ÚNICO GLOBAL -->
+        <section class="registro-global">
+            <h2>🎫 Pase de Acceso Global</h2>
+            <p style="margin-bottom: 1.5rem; color: #666;">Regístrate una vez y participa en todos los conciertos automáticamente.</p>
+            
+            <form id="form-registro" class="formulario">
+                <input type="text" id="hp_field" name="website_url" class="hide-robot" tabindex="-1" autocomplete="off">
+
+                <div class="input-group">
+                    <label for="nombre">Nombre o Apodo</label>
+                    <input type="text" id="nombre" required placeholder="Ej: Alex">
+                </div>
+                
+                <div class="input-group">
+                    <label for="red_social">¿Dónde te contactamos?</label>
+                    <select id="red_social" required>
+                        <option value="" disabled selected>Selecciona una opción</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="whatsapp">WhatsApp</option>
+                    </select>
+                </div>
+
+                <div class="input-group" style="grid-column: 1 / -1; grid-row: 2;">
+                    <label for="usuario">Usuario / Teléfono</label>
+                    <input type="text" id="usuario" required placeholder="Tu usuario o número (Ej: +34666555444)">
+                    <span id="hint-whatsapp" class="hint-text">Asegúrate de incluir el código de país (Ej: +34)</span>
+                </div>
+
+                <button type="submit" id="btn-submit" class="btn-submit">¡Participar Ahora!</button>
+            </form>
+        </section>
+
+        <!-- VALIDADOR DE ESTADO -->
+        <section class="validador-estado">
+            <h3>🔍 Comprueba tu Estado</h3>
+            <p style="color: #555;">¿No recuerdas si ya tienes tu pase global? Busca tu usuario.</p>
+            <div class="validador-form">
+                <input type="text" id="validador-input" placeholder="Introduce tu usuario o teléfono (Ej: @alex, +34666...)">
+                <button id="btn-validar" class="btn-validador">Verificar Pase</button>
+            </div>
+            <div id="validador-resultado" class="validador-resultado"></div>
+        </section>
+
+        <!-- GRID DE SORTEOS -->
+        <section class="sorteos-grid" id="contenedor-sorteos">
+            <!-- Las tarjetas se inyectan dinámicamente vía JS -->
+        </section>
+
+        <!-- PANEL DE ADMINISTRACIÓN OCULTO -->
+        <section id="admin-panel">
+            <h3>🔐 Panel de Control Maestro (Conectado a DB)</h3>
+            <div class="admin-controls">
+                <select id="admin-select-sorteo" style="width:100%; border:none; padding:1rem; border-radius:5px;"></select>
+                <button id="btn-admin-cerrar" class="btn-admin btn-cerrar">Cerrar Inscripciones</button>
+                <button id="btn-admin-sortear" class="btn-admin btn-sortear">¡Realizar Sorteo Real en Vivo!</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL DE GANADOR GIGANTE -->
+    <div class="modal-overlay" id="modal-ganador">
+        <div class="modal-content">
+            <h2>🎉 ¡GANADOR SELECCIONADO! 🎉</h2>
+            <p id="modal-concierto-nombre" style="font-size: 1.2rem; font-weight: bold;">Cargando concierto...</p>
+            <div class="winner-ticket" id="modal-ticket">TICKET-XXXX</div>
+            <div class="winner-user" id="modal-user">@us***</div>
+            <br>
+            <button class="btn-close-modal" onclick="cerrarModal()">¡Increíble!</button>
+        </div>
+    </div>
+
+    <!-- === BOTÓN FLOTANTE DE CANAL DE WHATSAPP === -->
+    <!-- REEMPLAZA EL ENLACE AQUÍ ABAJO POR EL TUYO REAL -->
+    <a href="https://whatsapp.com/channel/TU_LINK_DEL_CANAL_AQUI" target="_blank" class="btn-whatsapp-flotante">
+        <svg viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+        </svg>
+        <span>¡Únete al Canal!</span>
+    </a>
+
+    <!-- SCRIPT PRINCIPAL 100% PRODUCCIÓN FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, set, push, goOffline, goOnline, query, orderByChild, equalTo, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // =========================================================
+        // ⚠️ REEMPLAZA ESTO CON TUS CLAVES REALES DE FIREBASE ⚠️
+        // =========================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYohGy9drwkA-zoI_uvJFWu207Ho0Cb7k",
+            authDomain: "cyber-f6283.firebaseapp.com",
+            databaseURL: "https://cyber-f6283-default-rtdb.firebaseio.com",
+            projectId: "cyber-f6283"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // REGLA SPARK PLAN: Desconexión por defecto
+        goOffline(db);
+
+        // Envoltorio para operaciones de red (Máx 2.5 seg online)
+        function pulseOnline(callback) {
+            goOnline(db);
+            if(callback) {
+                Promise.resolve(callback()).finally(() => {
+                    setTimeout(() => goOffline(db), 2500);
+                });
+            } else {
+                setTimeout(() => goOffline(db), 2500);
+            }
+        }
+
+        // =========================================================
+        // CONFIGURACIÓN FÁCIL DE CONCIERTOS (ZONA HORARIA GMT-5)
+        // Formato obligatorio: "YYYY-MM-DD HH:MM"
+        // =========================================================
+        const BASE_CONCIERTOS = {
+            'bad-bunny': { 
+                nombre: 'Bad Bunny - Madrid 05/31 Golden Circle', 
+                fechaCierre: '2026-05-30 23:59'  
+            },
+            'bad-bunnyyy': { 
+                nombre: 'Bad Bunny - Madrid 06/07 Golden Circle', 
+                fechaCierre: '2026-06-06 23:59' 
+            },
+            'bad-bunnyyy': { 
+                nombre: 'Bad Bunny - Madrid 06/15 Golden Circle', 
+                fechaCierre: '2026-06-14 23:59' 
+            },
+            'bts': { 
+                nombre: 'BTS - Madrid 06/26 Pista A', 
+                fechaCierre: '2026-06-25 18:30' 
+            },
+            'btss': { 
+                nombre: 'BTS - Madrid 06/27 Pista A', 
+                fechaCierre: '2026-06-26 12:00' 
+            }
+        };
+
+        function obtenerTiempoGMT5(fechaTexto) {
+            const fechaISO = fechaTexto.replace(' ', 'T') + ':00-05:00';
+            return new Date(fechaISO).getTime();
+        }
+
+        let offsetHorario = 0; 
+        let totalRegistrosGlobales = 0;
+        let dataSorteosBD = {}; 
+
+        // 1. SINCRONIZACIÓN DE RELOJ (Ajustado a GMT-5)
+        async function sincronizarHora() {
+            try {
+                const res = await fetch('https://worldtimeapi.org/api/timezone/America/Bogota');
+                const data = await res.json();
+                offsetHorario = new Date(data.datetime).getTime() - Date.now();
+            } catch(e) {
+                console.warn("Fallo API reloj GMT-5. Usando hora local como respaldo.");
+            }
+        }
+
+        // 2. SINCRONIZACIÓN VERÍDICA CON FIREBASE
+        function syncRealFirebase() {
+            pulseOnline(async () => {
+                try {
+                    const statsRef = ref(db, 'stats/total');
+                    const statsSnap = await get(statsRef);
+                    if (statsSnap.exists()) {
+                        totalRegistrosGlobales = statsSnap.val();
+                        document.getElementById('contador-global').innerText = totalRegistrosGlobales.toLocaleString();
+                    }
+
+                    const sorteosRef = ref(db, 'sorteos');
+                    const sorteosSnap = await get(sorteosRef);
+                    if (sorteosSnap.exists()) {
+                        dataSorteosBD = sorteosSnap.val();
+                    }
+
+                    renderizarSorteos();
+                    document.getElementById('feed-container').innerHTML = `<div class="feed-item">✅ Sincronizado con DB Global.</div>`;
+                } catch(error) {
+                    console.error("Error al sincronizar con Firebase:", error);
+                }
+            });
+        }
+
+        // 3. RENDERIZADO DE INTERFAZ
+        const contenedorSorteos = document.getElementById('contenedor-sorteos');
+        const adminSelect = document.getElementById('admin-select-sorteo');
+
+        function renderizarSorteos() {
+            contenedorSorteos.innerHTML = '';
+            adminSelect.innerHTML = '<option value="" disabled selected>Selecciona un concierto</option>';
+
+            for (const [id, configBase] of Object.entries(BASE_CONCIERTOS)) {
+                const dataDB = dataSorteosBD[id] || {};
+                const status = dataDB.status || 'abierto';
+                
+                let ganadoresHTML = '<div class="ganador-item" style="justify-content:center;">Aún no hay ganadores</div>';
+                if (dataDB.ganadores) {
+                    const listaGanadores = Object.values(dataDB.ganadores).reverse();
+                    ganadoresHTML = listaGanadores.map(g => 
+                        `<div class="ganador-item"><span>🎫 <strong>${g.ticket}</strong></span> <span>${g.user}</span></div>`
+                    ).join('');
+                }
+
+                const badgeClass = status === 'abierto' ? 'estado-abierto' : 'estado-cerrado';
+                const badgeText = status === 'abierto' ? '🔥 Abierto' : '🔒 Cerrado';
+                const endTimeReal = obtenerTiempoGMT5(configBase.fechaCierre);
+                
+                const card = document.createElement('div');
+                card.className = 'tarjeta-sorteo';
+                card.innerHTML = `
+                    <div class="estado-badge ${badgeClass}">${badgeText}</div>
+                    <div class="tarjeta-header"><h3>${configBase.nombre}</h3></div>
+                    <div class="tarjeta-body">
+                        <p>Cuenta regresiva:</p>
+                        <div class="contador" id="contador-${id}" data-endtime="${endTimeReal}" data-status="${status}">Calculando...</div>
+                        <div class="ganadores-previos">
+                            <h4>Historial Oficial</h4>
+                            ${ganadoresHTML}
+                        </div>
+                    </div>
+                `;
+                contenedorSorteos.appendChild(card);
+                adminSelect.innerHTML += `<option value="${id}">${configBase.nombre}</option>`;
+            }
+        }
+
+        function actualizarContadores() {
+            const ahoraSeguro = Date.now() + offsetHorario;
+            const contadores = document.querySelectorAll('.contador');
+            
+            contadores.forEach(el => {
+                const endTime = parseInt(el.getAttribute('data-endtime'));
+                const status = el.getAttribute('data-status');
+
+                if (status === 'cerrado' || ahoraSeguro >= endTime) {
+                    el.innerHTML = `<span style="color: #ff4757; font-size: 2rem; font-weight: 900; font-family: 'Montserrat', sans-serif;">FINALIZADO</span>`; 
+                    return;
+                }
+                
+                const diff = endTime - ahoraSeguro;
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diff / 1000 / 60) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+
+                el.innerHTML = `
+                    <div class="time-box">
+                        <span>${d.toString().padStart(2,'0')}</span>
+                        <small>Días</small>
+                    </div>
+                    <div class="time-box">
+                        <span>${h.toString().padStart(2,'0')}</span>
+                        <small>Hrs</small>
+                    </div>
+                    <div class="time-box">
+                        <span>${m.toString().padStart(2,'0')}</span>
+                        <small>Min</small>
+                    </div>
+                    <div class="time-box">
+                        <span>${s.toString().padStart(2,'0')}</span>
+                        <small>Seg</small>
+                    </div>
+                `;
+            });
+        }
+
+        // 4. LÓGICA DEL FORMULARIO DE REGISTRO
+        const form = document.getElementById('form-registro');
+        const selectRed = document.getElementById('red_social');
+        const inputUsuario = document.getElementById('usuario');
+        const hintWhatsApp = document.getElementById('hint-whatsapp');
+        const btnSubmit = document.getElementById('btn-submit');
+
+        selectRed.addEventListener('change', () => {
+            if(selectRed.value === 'whatsapp') {
+                hintWhatsApp.style.display = 'block'; inputUsuario.placeholder = "Ej: +34666555444";
+            } else {
+                hintWhatsApp.style.display = 'none'; inputUsuario.placeholder = "Tu @usuario";
+            }
+        });
+
+        inputUsuario.addEventListener('input', (e) => {
+            let val = e.target.value;
+            if((selectRed.value === 'tiktok' || selectRed.value === 'instagram') && val.startsWith('@')) {
+                e.target.value = val.substring(1);
+            }
+            if(selectRed.value === 'whatsapp' && val.length > 0 && !val.startsWith('+')) {
+                hintWhatsApp.style.color = "red"; hintWhatsApp.style.fontWeight = "bold";
+            } else {
+                hintWhatsApp.style.color = "var(--coral-vivo)"; hintWhatsApp.style.fontWeight = "normal";
+            }
+        });
+
+        function censurarUsuario(tipo, usuario) {
+            if(tipo === 'whatsapp') return usuario.substring(0,3) + "******" + usuario.substring(usuario.length - 2);
+            return "@" + usuario.replace('@','').substring(0,2) + "***";
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(document.getElementById('hp_field').value !== "") return;
+
+            const tipoRed = selectRed.value;
+            const usuarioRaw = inputUsuario.value.trim();
+
+            if(tipoRed === 'whatsapp' && !usuarioRaw.startsWith('+')) return alert("WhatsApp requiere código de país (+34).");
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Registrando en DB... ⏳";
+            
+            pulseOnline(async () => {
+                try {
+                    const statsRef = ref(db, 'stats/total');
+                    const statsSnap = await get(statsRef);
+                    let contadorActual = statsSnap.exists() ? statsSnap.val() : 0;
+                    contadorActual++;
+                    
+                    const numTicket = "TICKET-" + contadorActual.toString().padStart(4, '0');
+
+                    const nuevoRegistroRef = push(ref(db, 'registros'));
+                    await set(nuevoRegistroRef, {
+                        nombre: document.getElementById('nombre').value,
+                        red: tipoRed,
+                        usuario: usuarioRaw,
+                        ticket: numTicket,
+                        timestamp: serverTimestamp()
+                    });
+
+                    await set(statsRef, contadorActual);
+
+                    totalRegistrosGlobales = contadorActual;
+                    document.getElementById('contador-global').innerText = totalRegistrosGlobales.toLocaleString();
+
+                    alert(`¡Registro Exitoso!\nTu ticket global es: ${numTicket}`);
+                    form.reset();
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "¡Participar Ahora!";
+
+                } catch(err) {
+                    console.error(err);
+                    alert("Error de conexión con Firebase. Asegúrate de configurar la API Key y Reglas.");
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "¡Participar Ahora!";
+                }
+            });
+        });
+
+        // 5. VALIDADOR DE ESTADO
+        const inputValidador = document.getElementById('validador-input');
+        const btnValidar = document.getElementById('btn-validar');
+        const divResultado = document.getElementById('validador-resultado');
+
+        btnValidar.addEventListener('click', () => {
+            let val = inputValidador.value.trim();
+            if(!val) return;
+            if(val.startsWith('@')) val = val.substring(1);
+
+            btnValidar.disabled = true;
+            btnValidar.innerText = "Consultando... ⏳";
+            divResultado.innerHTML = "";
+
+            pulseOnline(async () => {
+                try {
+                    const registrosRef = ref(db, 'registros');
+                    const consulta = query(registrosRef, orderByChild('usuario'), equalTo(val));
+                    const snapshot = await get(consulta);
+
+                    if(snapshot.exists()) {
+                        const datos = snapshot.val();
+                        const registroEncontrado = Object.values(datos)[0];
+                        divResultado.innerHTML = `<span class="res-success">✅ ¡Estás participando! Tu número de participación es: <strong>${registroEncontrado.ticket}</strong></span>`;
+                    } else {
+                        divResultado.innerHTML = `<span class="res-error">❌ No se encontraron registros para "${val}" en Firebase.</span>`;
+                    }
+                    btnValidar.disabled = false;
+                    btnValidar.innerText = "Verificar Pase";
+                } catch(error) {
+                    console.error(error);
+                    divResultado.innerHTML = `<span class="res-error">⚠️ Error de red al consultar DB. Asegúrate de tener '.indexOn': ['usuario'] en reglas de Firebase.</span>`;
+                    btnValidar.disabled = false;
+                    btnValidar.innerText = "Verificar Pase";
+                }
+            });
+        });
+
+        // 6. PANEL ADMIN (Ctrl+Shift+A)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+                const pass = prompt("Introduce contraseña:");
+                if (pass === "AdminSorteos2026") {
+                    document.getElementById('admin-panel').style.display = 'block';
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }
+            }
+        });
+
+        document.getElementById('btn-admin-cerrar').addEventListener('click', () => {
+            const id = adminSelect.value;
+            if(!id) return alert("Selecciona concierto.");
+            pulseOnline(async () => {
+                await set(ref(db, `sorteos/${id}/status`), 'cerrado');
+                syncRealFirebase();
+                alert("Sorteo cerrado en la base de datos.");
+            });
+        });
+
+        document.getElementById('btn-admin-sortear').addEventListener('click', () => {
+            const id = adminSelect.value;
+            if(!id) return alert("Selecciona un concierto en el desplegable.");
+
+            pulseOnline(async () => {
+                try {
+                    const regSnap = await get(ref(db, 'registros'));
+                    if (!regSnap.exists()) return alert("No hay nadie registrado en la DB.");
+
+                    const todosLosRegistros = Object.values(regSnap.val());
+                    const indiceAleatorio = Math.floor(Math.random() * todosLosRegistros.length);
+                    const ganadorElegido = todosLosRegistros[indiceAleatorio];
+                    const usuarioCensurado = censurarUsuario(ganadorElegido.red, ganadorElegido.usuario);
+
+                    const nuevoGanadorRef = push(ref(db, `sorteos/${id}/ganadores`));
+                    await set(nuevoGanadorRef, {
+                        ticket: ganadorElegido.ticket,
+                        user: usuarioCensurado,
+                        timestamp: serverTimestamp()
+                    });
+
+                    triggerModalGanador(BASE_CONCIERTOS[id].nombre, ganadorElegido.ticket, usuarioCensurado);
+                    syncRealFirebase();
+
+                } catch(err) {
+                    console.error("Error en sorteo: ", err);
+                    alert("Error realizando el sorteo.");
+                }
+            });
+        });
+
+        // 7. MODAL DE VICTORIA
+        window.cerrarModal = function() { document.getElementById('modal-ganador').classList.remove('active'); };
+
+        function triggerModalGanador(concierto, ticket, usuario) {
+            document.getElementById('modal-concierto-nombre').innerText = concierto;
+            document.getElementById('modal-ticket').innerText = ticket;
+            document.getElementById('modal-user').innerText = usuario;
+            document.getElementById('modal-ganador').classList.add('active');
+
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FF6B6B', '#4ECDC4', '#FFE66D'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FF6B6B', '#4ECDC4', '#FFE66D'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        // 8. INICIALIZACIÓN
+        async function initApp() {
+            await sincronizarHora();
+            setInterval(actualizarContadores, 1000);
+            syncRealFirebase();
+            setInterval(syncRealFirebase, 45000);
+        }
+
+        initApp();
+    </script>
+</body>
+</html>

@@ -246,7 +246,7 @@
                 <div class="input-group" style="grid-column: 1 / -1; grid-row: 2;">
                     <label for="usuario">Usuario / Teléfono</label>
                     <input type="text" id="usuario" required placeholder="Tu usuario o número (Ej: +34666555444)">
-                    <span id="hint-whatsapp" class="hint-text">Asegúrate de incluir el código de país (Ej: +34)</span>
+                    <span id="hint-whatsapp" class="hint-text">Asegúrate de incluir el código de tu país (Ej: +34)</span>
                 </div>
 
                 <button type="submit" id="btn-submit" class="btn-submit">¡Participar Ahora!</button>
@@ -341,24 +341,24 @@
         // =========================================================
         const BASE_CONCIERTOS = {
             'bad-bunny': { 
-                nombre: 'Bad Bunny - Madrid 05/31 Golden Circle', 
-                fechaCierre: '2026-05-30 23:59'  
+                nombre: 'Bad Bunny - Madrid | Concierto 05/31 | Golden Circle', 
+                fechaCierre: '2026-05-28 10:30'  
             },
             'bad-bunnyyy': { 
-                nombre: 'Bad Bunny - Madrid 06/07 Golden Circle', 
-                fechaCierre: '2026-06-06 23:59' 
+                nombre: 'Bad Bunny - Madrid | Concierto 06/07 | Golden Circle', 
+                fechaCierre: '2026-06-04 10:30' 
             },
             'bad-bunnyyy': { 
-                nombre: 'Bad Bunny - Madrid 06/15 Golden Circle', 
-                fechaCierre: '2026-06-14 23:59' 
+                nombre: 'Bad Bunny - Madrid | Concierto 06/15 | Golden Circle', 
+                fechaCierre: '2026-06-12 10:30' 
             },
             'bts': { 
-                nombre: 'BTS - Madrid 06/26 Pista A', 
-                fechaCierre: '2026-06-25 18:30' 
+                nombre: 'BTS - Madrid | Concierto 06/26 | Pista A', 
+                fechaCierre: '2026-06-23 10:30' 
             },
             'btss': { 
-                nombre: 'BTS - Madrid 06/27 Pista A', 
-                fechaCierre: '2026-06-26 12:00' 
+                nombre: 'BTS - Madrid | Concierto 06/27 | Pista A', 
+                fechaCierre: '2026-06-24 10:30' 
             }
         };
 
@@ -529,7 +529,7 @@
             const tipoRed = selectRed.value;
             const usuarioRaw = inputUsuario.value.trim();
 
-            if(tipoRed === 'whatsapp' && !usuarioRaw.startsWith('+')) return alert("WhatsApp requiere código de país (+34).");
+            if(tipoRed === 'whatsapp' && !usuarioRaw.startsWith('+')) return alert("WhatsApp requiere código de país ej:+34.");
 
             btnSubmit.disabled = true;
             btnSubmit.innerText = "Registrando en DB... ⏳";
@@ -564,7 +564,7 @@
 
                 } catch(err) {
                     console.error(err);
-                    alert("Error de conexión con Firebase. Asegúrate de configurar la API Key y Reglas.");
+                    alert("Error de conexión. Asegúrate de configurar");
                     btnSubmit.disabled = false;
                     btnSubmit.innerText = "¡Participar Ahora!";
                 }
@@ -602,7 +602,7 @@
                     btnValidar.innerText = "Verificar Pase";
                 } catch(error) {
                     console.error(error);
-                    divResultado.innerHTML = `<span class="res-error">⚠️ Error de red al consultar DB. Asegúrate de tener '.indexOn': ['usuario'] en reglas de Firebase.</span>`;
+                    divResultado.innerHTML = `<span class="res-error">⚠️ Error de red al consultar. Asegúrate de tener '.indexOn': ['usuario']</span>`;
                     btnValidar.disabled = false;
                     btnValidar.innerText = "Verificar Pase";
                 }
@@ -637,7 +637,7 @@
             pulseOnline(async () => {
                 try {
                     const regSnap = await get(ref(db, 'registros'));
-                    if (!regSnap.exists()) return alert("No hay nadie registrado en la DB.");
+                    if (!regSnap.exists()) return alert("No hay nadie registrado");
 
                     const todosLosRegistros = Object.values(regSnap.val());
                     const indiceAleatorio = Math.floor(Math.random() * todosLosRegistros.length);
